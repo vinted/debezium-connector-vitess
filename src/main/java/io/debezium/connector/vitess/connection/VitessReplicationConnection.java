@@ -156,16 +156,21 @@ public class VitessReplicationConnection implements ReplicationConnection {
                                     "Initial vgid:%s, "
                                             + "lastProcessedVgtid:%s, "
                                             + "vgtidEofHandlingEnabled: %b, "
-                                            + "internalRestarts: %s",
+                                            + "internalRestarts: %s, "
+                                            + "keyspace: %s, "
+                                            + "tables: %s, ",
                                     vgtid,
                                     lastProcessedVgtid,
                                     config.getVgtidEofHandlingEnabled(),
-                                    internalRestarts.get()));
+                                    internalRestarts.get(),
+                                    config.getKeyspace(),
+                                    config.tableIncludeList()
+                                    ));
 
                     if (internalRestarts.get() > 0) {
                         String message = String.format(
-                                "Vitess connection was closed. Restart #:%s. Using Vgtid:%s",
-                                internalRestarts.decrementAndGet(), currentVgtid);
+                                "Vitess connection for keyspace:%s and tables: %s  was closed. Restart #:%s. Using Vgtid:%s",
+                                config.getKeyspace(), config.tableIncludeList(), internalRestarts.decrementAndGet(), currentVgtid);
                         LOGGER.warn(message, t);
                         restartStreaming(currentVgtid);
                     }
@@ -176,25 +181,28 @@ public class VitessReplicationConnection implements ReplicationConnection {
 
                         Vgtid latestExistingVgtid = defaultVgtid(config);
                         String message = String.format(
-                                "Vitess connection was closed and didn't recover. "
+                                "Vitess connection for keyspace:%s and tables: %s was closed and didn't recover. "
                                         + "Vgtid:%s is probably expired, skipping to latest Vgtid:%s ",
-                                vgtid, latestExistingVgtid);
+                                config.getKeyspace(), config.tableIncludeList(), vgtid, latestExistingVgtid);
                         LOGGER.warn(message, t);
                         restartStreaming(latestExistingVgtid);
                     }
                     else {
-                        LOGGER.error(
-                                "VStream streaming onError. Status: "
-                                        + Status.fromThrowable(t),
-                                t);
+                        LOGGER.error(String.format(
+                                "VStream streaming for keyspace:%s and tables: %s  onError. Status: %s",
+                                config.getKeyspace(),
+                                config.tableIncludeList(),
+                                Status.fromThrowable(t)), t);
                         error.compareAndSet(null, t);
                     }
 
                 }
                 else {
-                    LOGGER.error(
-                            "VStream streaming onError. Status: " + Status.fromThrowable(t),
-                            t);
+                    LOGGER.error(String.format(
+                            "VStream streaming for keyspace:%s and tables: %s  onError. Status: %s",
+                            config.getKeyspace(),
+                            config.tableIncludeList(),
+                            Status.fromThrowable(t)), t);
                     error.compareAndSet(null, t);
                 }
             }
