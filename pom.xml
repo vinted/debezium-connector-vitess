@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <parent>
         <groupId>io.debezium</groupId>
@@ -16,7 +17,8 @@
     <properties>
         <!-- Debezium parent -->
         <version.debezium>${project.version}</version.debezium>
-
+        <!-- Force different version -->
+        <version.debezium.patched>1.6.5.Final</version.debezium.patched>
         <!--
           Specify the properties that will be used for setting up the integration tests' Docker container.
           Note that the `dockerhost.ip` property is computed from the IP address of DOCKER_HOST, which will
@@ -259,7 +261,27 @@
     </dependencies>
 
     <build>
+        <finalName>${project.artifactId}-${version.debezium.patched}</finalName>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>2.3.1</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <phase>install</phase>
+                        <configuration>
+                            <file>${build.directory}/${project.build.finalName}.${project.packaging}</file>
+                            <generatePom>false</generatePom>
+                            <pomFile>pom.xml</pomFile>
+                            <version>${version.debezium.patched}</version>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <!-- Integration test -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -409,7 +431,7 @@
                                     <goal>single</goal>
                                 </goals>
                                 <configuration>
-                                    <finalName>${project.artifactId}-${project.version}</finalName>
+                                    <finalName>${project.artifactId}-${version.debezium.patched}</finalName>
                                     <attach>true</attach>  <!-- we want attach & deploy these to Maven -->
                                     <descriptorRefs>
                                         <descriptorRef>connector-distribution</descriptorRef>
