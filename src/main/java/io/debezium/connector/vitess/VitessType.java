@@ -96,13 +96,13 @@ public class VitessType {
                 return new VitessType(type, Types.BIGINT, resolveEnumAndSetValues(field.getColumnType()));
             case "UINT32":
             case "INT64":
+            case "UINT64":
                 return new VitessType(type, Types.BIGINT);
             case "BLOB":
                 return new VitessType(type, Types.BLOB);
             case "VARBINARY":
             case "BINARY":
                 return new VitessType(type, Types.BINARY);
-            case "UINT64":
             case "VARCHAR":
             case "CHAR":
             case "TEXT":

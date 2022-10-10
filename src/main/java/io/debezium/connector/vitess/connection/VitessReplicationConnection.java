@@ -164,8 +164,7 @@ public class VitessReplicationConnection implements ReplicationConnection {
                                     config.getVgtidEofHandlingEnabled(),
                                     internalRestarts.get(),
                                     config.getKeyspace(),
-                                    config.tableIncludeList()
-                                    ));
+                                    config.tableIncludeList()));
 
                     if (internalRestarts.get() > 0) {
                         String message = String.format(
