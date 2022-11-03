@@ -273,10 +273,15 @@ public class VitessReplicationConnection implements ReplicationConnection {
         // (VitessStreamingChangeEventSource.java:75)
 
         if (explicitTables.size() > 0) {
-            String tableRegexp = "/\\b(?:" + String.join("|", explicitTables) + ")\\b";
-            Binlogdata.Filter tableFilter = Binlogdata.Filter.newBuilder()
-                    .addRules(Binlogdata.Rule.newBuilder().setMatch(tableRegexp).build())
-                    .build();
+            Binlogdata.Filter.Builder tableFilterBuilder = Binlogdata.Filter.newBuilder();
+            for (String table : explicitTables) {
+                String sql = "select * from " + table;
+                // See rule in: https://github.com/vitessio/vitess/blob/release-14.0/go/vt/vttablet/tabletserver/vstreamer/planbuilder.go#L316
+                Binlogdata.Rule rule = Binlogdata.Rule.newBuilder().setMatch(table).setFilter(sql).build();
+                LOGGER.info("Add vstream table filtering: {}", rule.getMatch());
+                tableFilterBuilder.addRules(rule);
+            }
+            Binlogdata.Filter tableFilter = tableFilterBuilder.build();
             stub.vStream(
                     Vtgate.VStreamRequest.newBuilder()
                             .setVgtid(vgtid.getRawVgtid())
