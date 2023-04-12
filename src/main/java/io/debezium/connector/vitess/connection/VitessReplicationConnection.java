@@ -50,7 +50,7 @@ public class VitessReplicationConnection implements ReplicationConnection {
     private final VitessConnectorConfig config;
     // Channel closing is invoked from the change-event-source-coordinator thread
     private final AtomicReference<ManagedChannel> managedChannel = new AtomicReference<>();
-    private AtomicInteger internalRestarts = new AtomicInteger(5);
+    private final AtomicInteger internalRestarts = new AtomicInteger(5);
 
     public VitessReplicationConnection(VitessConnectorConfig config, VitessDatabaseSchema schema) {
         this.messageDecoder = new VStreamOutputMessageDecoder(schema);
@@ -174,15 +174,14 @@ public class VitessReplicationConnection implements ReplicationConnection {
                         restartStreaming(currentVgtid);
                     }
                     // Mitigate vgtid expired with EOF exception in case SKIP is enabled
-                    else if (internalRestarts.get() <= 0
+                    else if (internalRestarts.get() == 0
                             && Objects.equals(currentVgtid, vgtid)
                             && config.getVgtidEofHandlingEnabled()) {
-
                         Vgtid latestExistingVgtid = defaultVgtid(config);
                         String message = String.format(
                                 "Vitess connection for keyspace:%s and tables: %s was closed and didn't recover. "
-                                        + "Vgtid:%s is probably expired, skipping to latest Vgtid:%s ",
-                                config.getKeyspace(), config.tableIncludeList(), vgtid, latestExistingVgtid);
+                                        + "Restart #:%s. Vgtid:%s is probably expired, skipping to latest Vgtid:%s ",
+                                config.getKeyspace(), config.tableIncludeList(), vgtid, internalRestarts.getAndDecrement(), latestExistingVgtid);
                         LOGGER.warn(message, t);
                         restartStreaming(latestExistingVgtid);
                     }
