@@ -18,7 +18,7 @@
         <!-- Debezium parent -->
         <version.debezium>${project.version}</version.debezium>
         <!-- Force different version -->
-        <version.debezium.patched>1.6.6.Final</version.debezium.patched>
+        <version.debezium.patched>1.6.7.Final</version.debezium.patched>
         <!--
           Specify the properties that will be used for setting up the integration tests' Docker container.
           Note that the `dockerhost.ip` property is computed from the IP address of DOCKER_HOST, which will
