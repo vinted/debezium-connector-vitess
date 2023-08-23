@@ -36,7 +36,7 @@
         <repository>
             <id>oss</id>
             <name>OSS Sonatype Nexus</name>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>VitessConnectorConfig.java
             <releases>
                 <enabled>true</enabled>
                 <updatePolicy>never</updatePolicy>
