@@ -18,6 +18,7 @@ import io.debezium.connector.base.ChangeEventQueue;
 import io.debezium.connector.common.BaseSourceTask;
 import io.debezium.connector.vitess.connection.ReplicationConnection;
 import io.debezium.connector.vitess.connection.VitessReplicationConnection;
+import io.debezium.connector.vitess.metrics.VgtidResetMetric;
 import io.debezium.pipeline.ChangeEventSourceCoordinator;
 import io.debezium.pipeline.DataChangeEvent;
 import io.debezium.pipeline.ErrorHandler;
@@ -70,7 +71,9 @@ public class VitessConnectorTask extends BaseSourceTask<VitessPartition, VitessO
                 LOGGER.info("Found previous offset {}", previousOffset);
             }
 
-            replicationConnection = new VitessReplicationConnection(connectorConfig, schema);
+            VgtidResetMetric vgtidResetMetric = new VgtidResetMetric(taskContext.getConnectorType(), taskContext.getTaskId(), connectorConfig);
+            vgtidResetMetric.register();
+            replicationConnection = new VitessReplicationConnection(connectorConfig, schema, vgtidResetMetric);
 
             queue = new ChangeEventQueue.Builder<DataChangeEvent>()
                     .pollInterval(connectorConfig.getPollInterval())

@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import io.debezium.connector.vitess.connection.ReplicationMessage;
 import io.debezium.connector.vitess.connection.VitessReplicationConnection;
+import io.debezium.connector.vitess.metrics.VgtidResetMetric;
 import io.debezium.doc.FixFor;
 import io.debezium.util.SchemaNameAdjuster;
 
@@ -51,8 +52,11 @@ public class VitessReplicationConnectionIT {
         final VitessDatabaseSchema vitessDatabaseSchema = new VitessDatabaseSchema(
                 conf, SchemaNameAdjuster.create(), VitessTopicSelector.defaultSelector(conf));
 
+        final VgtidResetMetric metric = new VgtidResetMetric("testConnector", "1", conf);
+        metric.register();
+
         AtomicReference<Throwable> error = new AtomicReference<>();
-        try (VitessReplicationConnection connection = new VitessReplicationConnection(conf, vitessDatabaseSchema)) {
+        try (VitessReplicationConnection connection = new VitessReplicationConnection(conf, vitessDatabaseSchema, metric)) {
             Vgtid startingVgtid = Vgtid.of(
                     Binlogdata.VGtid.newBuilder()
                             .addShardGtids(
@@ -117,7 +121,9 @@ public class VitessReplicationConnectionIT {
         final VitessDatabaseSchema vitessDatabaseSchema = new VitessDatabaseSchema(
                 conf, SchemaNameAdjuster.create(), VitessTopicSelector.defaultSelector(conf));
         AtomicReference<Throwable> error = new AtomicReference<>();
-        try (VitessReplicationConnection connection = new VitessReplicationConnection(conf, vitessDatabaseSchema)) {
+        final VgtidResetMetric metric = new VgtidResetMetric("testConnector", "1", conf);
+        metric.register();
+        try (VitessReplicationConnection connection = new VitessReplicationConnection(conf, vitessDatabaseSchema, metric)) {
             Vgtid startingVgtid = Vgtid.of(
                     Binlogdata.VGtid.newBuilder()
                             .addShardGtids(

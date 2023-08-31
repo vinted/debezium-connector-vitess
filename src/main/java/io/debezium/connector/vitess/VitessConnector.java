@@ -66,7 +66,7 @@ public class VitessConnector extends RelationalBaseSourceConnector {
         ConfigValue hostnameValue = configValues.get(RelationalDatabaseConnectorConfig.HOSTNAME.name());
         // Try to connect to the database ...
         final VitessConnectorConfig connectionConfig = new VitessConnectorConfig(config);
-        try (VitessReplicationConnection connection = new VitessReplicationConnection(connectionConfig, null)) {
+        try (VitessReplicationConnection connection = new VitessReplicationConnection(connectionConfig, null, null)) {
             try {
                 connection.execute("SHOW DATABASES");
                 LOGGER.info("Successfully tested connection for {} with user '{}'", connection.connectionString(), connection.username());
