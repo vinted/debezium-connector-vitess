@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import io.debezium.connector.vitess.Vgtid;
 import io.debezium.connector.vitess.VitessConnectorConfig;
 import io.debezium.connector.vitess.VitessDatabaseSchema;
+import io.debezium.connector.vitess.metrics.VgtidResetMetric;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
@@ -54,9 +55,12 @@ public class VitessReplicationConnection implements ReplicationConnection {
     private final AtomicReference<ManagedChannel> managedChannel = new AtomicReference<>();
     private final AtomicInteger internalRestarts = new AtomicInteger(5);
 
-    public VitessReplicationConnection(VitessConnectorConfig config, VitessDatabaseSchema schema) {
+    private final VgtidResetMetric vgtidResetMetric;
+
+    public VitessReplicationConnection(VitessConnectorConfig config, VitessDatabaseSchema schema, VgtidResetMetric vgtidResetMetric) {
         this.messageDecoder = new VStreamOutputMessageDecoder(schema);
         this.config = config;
+        this.vgtidResetMetric = vgtidResetMetric;
     }
 
     /**
@@ -195,6 +199,7 @@ public class VitessReplicationConnection implements ReplicationConnection {
                                 config.getKeyspace(), config.tableIncludeList(), vgtid, internalRestarts.getAndDecrement(), latestExistingVgtid);
                         LOGGER.warn(message, t);
                         restartStreaming(latestExistingVgtid);
+                        vgtidResetMetric.resetVgtid();
                     }
                     else {
                         LOGGER.error(String.format(
