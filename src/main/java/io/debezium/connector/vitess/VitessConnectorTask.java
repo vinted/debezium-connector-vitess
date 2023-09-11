@@ -41,6 +41,8 @@ public class VitessConnectorTask extends BaseSourceTask<VitessPartition, VitessO
     private volatile VitessDatabaseSchema schema;
     private volatile ReplicationConnection replicationConnection;
 
+    private volatile VgtidResetMetric vgtidResetMetric;
+
     @Override
     public String version() {
         return Module.version();
@@ -71,7 +73,7 @@ public class VitessConnectorTask extends BaseSourceTask<VitessPartition, VitessO
                 LOGGER.info("Found previous offset {}", previousOffset);
             }
 
-            VgtidResetMetric vgtidResetMetric = new VgtidResetMetric(taskContext.getConnectorType(), taskContext.getTaskId(), connectorConfig);
+            vgtidResetMetric = new VgtidResetMetric(taskContext.getConnectorType(), taskContext.getTaskId(), connectorConfig);
             vgtidResetMetric.register();
             replicationConnection = new VitessReplicationConnection(connectorConfig, schema, vgtidResetMetric);
 
@@ -129,6 +131,10 @@ public class VitessConnectorTask extends BaseSourceTask<VitessPartition, VitessO
     protected void doStop() {
         if (schema != null) {
             schema.close();
+        }
+
+        if (vgtidResetMetric != null) {
+            vgtidResetMetric.unregister();
         }
     }
 
