@@ -8,6 +8,7 @@ package io.debezium.connector.vitess.connection;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.fest.assertions.Assertions.assertThat;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -129,8 +130,8 @@ public class VStreamOutputMessageDecoderTest {
         String shard1 = "-80";
         String shard2 = "80-";
         // exercise SUT
-        decoder.processMessage(TestHelper.newFieldEvent(TestHelper.columnValuesSubset(), shard1, TestHelper.TEST_SHARDED_KEYSPACE), null, null, false);
-        decoder.processMessage(TestHelper.newFieldEvent(TestHelper.columnValuesSubset(), shard2, TestHelper.TEST_SHARDED_KEYSPACE), null, null, false);
+        decoder.processMessage(TestHelper.newFieldEvent(TestHelper.defaultColumnValues(), shard1, TestHelper.TEST_SHARDED_KEYSPACE), null, null, false);
+        decoder.processMessage(TestHelper.newFieldEvent(TestHelper.defaultColumnValues(), shard2, TestHelper.TEST_SHARDED_KEYSPACE), null, null, false);
         Table table = schema.tableFor(new TableId(shard1, TestHelper.TEST_SHARDED_KEYSPACE, TestHelper.TEST_TABLE));
 
         // verify outcome
@@ -227,67 +228,67 @@ public class VStreamOutputMessageDecoderTest {
                 .hasMessageContaining("bool_col")
                 .hasMessageContaining("long_col");
     }
-//
-//    @Test
-//    public void shouldProcessOutOfOrderTypeAndRowMessages() throws Exception {
-//
-//        // Create schema for default fields
-//        decoder.processMessage(TestHelper.defaultFieldEvent(), null, null, false);
-//        // verify outcome
-//        Table table = schema.tableFor(TestHelper.defaultTableId());
-//        assertThat(table).isNotNull();
-//        assertThat(table.id().schema()).isEqualTo(TestHelper.TEST_UNSHARDED_KEYSPACE);
-//        assertThat(table.id().table()).isEqualTo(TestHelper.TEST_TABLE);
-//        assertThat(table.columns().size()).isEqualTo(TestHelper.defaultNumOfColumns());
-//        for (Query.Field field : TestHelper.defaultFields()) {
-//            assertThat(table.columnWithName(field.getName())).isNotNull();
-//        }
-//
-//        // Fields update with a subset of fields
-//        decoder.processMessage((TestHelper.newFieldEvent(
-//                TestHelper.columnValuesSubset(),
-//                TestHelper.TEST_SHARD,
-//                TestHelper.TEST_UNSHARDED_KEYSPACE)),
-//                null, null, false);
-//        // verify outcome
-//        Table tableUpdated = schema.tableFor(TestHelper.defaultTableId());
-//        assertThat(tableUpdated).isNotNull();
-//        assertThat(tableUpdated.id().schema()).isEqualTo(TestHelper.TEST_UNSHARDED_KEYSPACE);
-//        assertThat(tableUpdated.id().table()).isEqualTo(TestHelper.TEST_TABLE);
-//        assertThat(tableUpdated.columns().size()).isEqualTo(TestHelper.columnSubsetNumOfColumns());
-//        for (Query.Field field : TestHelper.fieldsSubset()) {
-//            assertThat(tableUpdated.columnWithName(field.getName())).isNotNull();
-//        }
-//
-//        // Row event with old default fields
-//        final boolean[] processed = { false };
-//        decoder.processMessage(
-//                TestHelper.defaultInsertEvent(),
-//                (message, vgtid, isLastRowEventOfTransaction) -> {
-//                    // verify outcome
-//                    assertThat(message).isNotNull();
-//                    assertThat(message).isInstanceOf(VStreamOutputReplicationMessage.class);
-//                    assertThat(message.getOperation()).isEqualTo(ReplicationMessage.Operation.INSERT);
-//                    assertThat(message.getOldTupleList()).isNull();
-//                    assertThat(message.getNewTupleList().size()).isEqualTo(TestHelper.defaultNumOfColumns());
-//                    processed[0] = true;
-//                },
-//                null, false);
-//
-//        // Row event with new fields
-//        decoder.processMessage(
-//                TestHelper.insertEvent(TestHelper.columnValuesSubset()),
-//                (message, vgtid, isLastRowEventOfTransaction) -> {
-//                    // verify outcome
-//                    assertThat(message).isNotNull();
-//                    assertThat(message).isInstanceOf(VStreamOutputReplicationMessage.class);
-//                    assertThat(message.getOperation()).isEqualTo(ReplicationMessage.Operation.INSERT);
-//                    assertThat(message.getOldTupleList()).isNull();
-//                    assertThat(message.getNewTupleList().size()).isEqualTo(TestHelper.columnSubsetNumOfColumns());
-//                    processed[0] = true;
-//                },
-//                null, false);
-//    }
+
+    @Test
+    public void shouldProcessOutOfOrderTypeAndRowMessages() throws Exception {
+
+        // Create schema for default fields
+        decoder.processMessage(TestHelper.defaultFieldEvent(), null, null, false);
+        // verify outcome
+        Table table = schema.tableFor(TestHelper.defaultTableId());
+        assertThat(table).isNotNull();
+        assertThat(table.id().schema()).isEqualTo(TestHelper.TEST_UNSHARDED_KEYSPACE);
+        assertThat(table.id().table()).isEqualTo(TestHelper.TEST_TABLE);
+        assertThat(table.columns().size()).isEqualTo(TestHelper.defaultNumOfColumns());
+        for (Query.Field field : TestHelper.defaultFields()) {
+            assertThat(table.columnWithName(field.getName())).isNotNull();
+        }
+
+        // Fields update with a subset of fields
+        decoder.processMessage((TestHelper.newFieldEvent(
+                TestHelper.columnValuesSubset(),
+                TestHelper.TEST_SHARD,
+                TestHelper.TEST_UNSHARDED_KEYSPACE)),
+                null, null, false);
+        // verify outcome
+        Table tableUpdated = schema.tableFor(TestHelper.defaultTableId());
+        assertThat(tableUpdated).isNotNull();
+        assertThat(tableUpdated.id().schema()).isEqualTo(TestHelper.TEST_UNSHARDED_KEYSPACE);
+        assertThat(tableUpdated.id().table()).isEqualTo(TestHelper.TEST_TABLE);
+        assertThat(tableUpdated.columns().size()).isEqualTo(TestHelper.columnSubsetNumOfColumns());
+        for (Query.Field field : TestHelper.fieldsSubset()) {
+            assertThat(tableUpdated.columnWithName(field.getName())).isNotNull();
+        }
+
+        // Row event with old default fields
+        final boolean[] processed = { false };
+        decoder.processMessage(
+                TestHelper.defaultInsertEvent(),
+                (message, vgtid, isLastRowEventOfTransaction) -> {
+                    // verify outcome
+                    assertThat(message).isNotNull();
+                    assertThat(message).isInstanceOf(VStreamOutputReplicationMessage.class);
+                    assertThat(message.getOperation()).isEqualTo(ReplicationMessage.Operation.INSERT);
+                    assertThat(message.getOldTupleList()).isNull();
+                    assertThat(message.getNewTupleList().size()).isEqualTo(TestHelper.defaultNumOfColumns());
+                    processed[0] = true;
+                },
+                null, false);
+
+        // Row event with new fields
+        decoder.processMessage(
+                TestHelper.insertEvent(TestHelper.columnValuesSubset()),
+                (message, vgtid, isLastRowEventOfTransaction) -> {
+                    // verify outcome
+                    assertThat(message).isNotNull();
+                    assertThat(message).isInstanceOf(VStreamOutputReplicationMessage.class);
+                    assertThat(message.getOperation()).isEqualTo(ReplicationMessage.Operation.INSERT);
+                    assertThat(message.getOldTupleList()).isNull();
+                    assertThat(message.getNewTupleList().size()).isEqualTo(TestHelper.columnSubsetNumOfColumns());
+                    processed[0] = true;
+                },
+                null, false);
+    }
 
     @Test
     public void shouldProcessBeginEvent() throws Exception {
@@ -486,7 +487,6 @@ public class VStreamOutputMessageDecoderTest {
     public void shouldProcessDeleteEvent() throws Exception {
         // setup fixture
         decoder.processMessage(TestHelper.defaultFieldEvent(), null, null, false);
-        Table table = schema.tableFor(TestHelper.defaultTableId());
 
         // exercise SUT
         final boolean[] processed = { false };
@@ -517,15 +517,15 @@ public class VStreamOutputMessageDecoderTest {
                 TestHelper.defaultUpdateEvent(),
                 (message, vgtid, isLastRowEventOfTransaction) -> {
                     // verify outcome
-                    assertThat(message).isNotNull();
-                    assertThat(message).isInstanceOf(VStreamOutputReplicationMessage.class);
-                    assertThat(message.getOperation()).isEqualTo(ReplicationMessage.Operation.UPDATE);
-                    assertThat(message.getOldTupleList().size()).isEqualTo(TestHelper.defaultNumOfColumns());
-                    assertThat(message.getNewTupleList().size()).isEqualTo(TestHelper.defaultNumOfColumns());
+                    Assertions.assertThat(message).isNotNull();
+                    Assertions.assertThat(message).isInstanceOf(VStreamOutputReplicationMessage.class);
+                    Assertions.assertThat(message.getOperation()).isEqualTo(ReplicationMessage.Operation.UPDATE);
+                    Assertions.assertThat(message.getOldTupleList().size()).isEqualTo(TestHelper.defaultNumOfColumns());
+                    Assertions.assertThat(message.getNewTupleList().size()).isEqualTo(TestHelper.defaultNumOfColumns());
                     processed[0] = true;
                 },
                 null,
                 false);
-        assertThat(processed[0]).isTrue();
+        Assertions.assertThat(processed[0]).isTrue();
     }
 }

@@ -18,7 +18,7 @@
         <version.debezium>${project.version}</version.debezium>
 
         <!-- Force different version -->
-        <version.debezium.patched>1.9.11.Final</version.debezium.patched>
+        <version.debezium.patched>1.9.12.Final</version.debezium.patched>
 
         <!--
           Specify the properties that will be used for setting up the integration tests' Docker container.
