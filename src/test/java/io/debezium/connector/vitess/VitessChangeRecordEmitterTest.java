@@ -17,7 +17,6 @@ import io.debezium.connector.vitess.connection.TransactionalMessage;
 import io.debezium.connector.vitess.connection.VStreamOutputMessageDecoder;
 import io.debezium.connector.vitess.connection.VStreamOutputReplicationMessage;
 import io.debezium.data.Envelope;
-import io.debezium.relational.TableId;
 import io.debezium.util.Clock;
 import io.debezium.util.SchemaNameAdjuster;
 
