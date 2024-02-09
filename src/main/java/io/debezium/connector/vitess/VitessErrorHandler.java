@@ -12,8 +12,12 @@ import io.debezium.connector.base.ChangeEventQueue;
 import io.debezium.pipeline.ErrorHandler;
 import io.grpc.StatusRuntimeException;
 
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+
 public class VitessErrorHandler extends ErrorHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(VitessErrorHandler.class);
+    private static AtomicInteger connectionRefusedRestarts = new AtomicInteger(100);
 
     public VitessErrorHandler(VitessConnectorConfig connectorConfig, ChangeEventQueue<?> queue) {
         super(VitessConnector.class, connectorConfig, queue);
@@ -34,6 +38,9 @@ public class VitessErrorHandler extends ErrorHandler {
                     }
                     return false;
                 case UNAVAILABLE:
+                    if (throwable.getCause().toString().contains("AnnotatedConnectException: Connection refused")) {
+                        return connectionRefusedRestarts.getAndDecrement() > 0;
+                    }
                     return true;
                 case UNKNOWN:
                     // Stream timeout error due to idle VStream or vstream ended unexpectedly.
