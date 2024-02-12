@@ -18,7 +18,7 @@
         <version.debezium>1.9.7.Final</version.debezium>
 
         <!-- Force different version -->
-        <version.debezium.patched>1.9.13.Final</version.debezium.patched>
+        <version.debezium.patched>1.9.14.Final</version.debezium.patched>
 
         <!--
           Specify the properties that will be used for setting up the integration tests' Docker container.
@@ -100,7 +100,7 @@
             </dependency>
             <dependency>
                 <groupId>io.netty</groupId>
-                <artifactId>netty-common</artifactId>
+                <artifactId>netty-commoifn</artifactId>
                 <scope>provided</scope>
             </dependency>
             <dependency>
